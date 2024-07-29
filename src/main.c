@@ -1,4 +1,4 @@
-#include "raylib.h"
+#include <raylib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -13,9 +13,25 @@ typedef int16_t i16;
 typedef int32_t i32;
 typedef int64_t i64;
 
+Color bg = (Color) { 28, 28, 28, 255 }; // bg color
+
+// tetromino types
+typedef enum {
+    TETROMINO_STRAIGHT,
+    TETROMINO_SQUARE,
+    TETROMINO_T,
+    TETROMINO_L,
+    TETROMINO_SKREW
+} TetrominoType;
+
+
 typedef struct {
-    bool matrix[20][10]; // 20x10 grid
-} State;
+    u8 matrix[20][10]; // 20x10 grid (0 empty, 1 filled)
+} GameState;
+
+GameState state = (GameState) {
+    .matrix = {0} // init to empty
+};
 
 // init window
 void init() {
@@ -23,15 +39,14 @@ void init() {
    SetTargetFPS(60);
 }
 
-int main()
-{
+int main() {
     init();
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground(bg);
 
         EndDrawing();
     }

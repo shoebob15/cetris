@@ -13,6 +13,9 @@ typedef int16_t i16;
 typedef int32_t i32;
 typedef int64_t i64;
 
+// sprites
+Texture tetromino_block;
+
 Color bg = (Color) { 28, 28, 28, 255 }; // bg color
 
 // tetromino types
@@ -35,8 +38,24 @@ GameState state = (GameState) {
 
 // init window
 void init() {
-   InitWindow(800, 600, "Cetris");
+   InitWindow(800, 640, "Cetris");
    SetTargetFPS(60);
+
+   tetromino_block = LoadTexture("assets/tetromino_block.png");
+}
+
+void draw_game_board() {
+    for (int r = 0; r < 2; r++) {
+        for (int i = 0; i < 20; i++) {
+            DrawTextureEx(tetromino_block,
+                (Vector2) {
+                    (240 - 16) + (r * (32 * 10)),
+                    i * 32
+                },
+                0.0, 2.0, WHITE
+            );
+        }
+    }
 }
 
 int main() {
@@ -45,7 +64,7 @@ int main() {
     while (!WindowShouldClose())
     {
         BeginDrawing();
-
+        draw_game_board();
         ClearBackground(bg);
 
         EndDrawing();

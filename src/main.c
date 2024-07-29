@@ -1,5 +1,6 @@
 #include "raylib.h"
-#include "stdint.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 // personal typedefs
 typedef uint8_t u8;
@@ -11,6 +12,10 @@ typedef int8_t i8;
 typedef int16_t i16;
 typedef int32_t i32;
 typedef int64_t i64;
+
+typedef struct {
+    bool matrix[20][10]; // 20x10 grid
+} State;
 
 // init window
 void init() {

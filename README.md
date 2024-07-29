@@ -32,6 +32,6 @@ Prebuilt binaries for most platforms are in the Github releases tab (TODO)
 
 ↓ -> Slow drop
 
-<Space> -> Fast drop
+space -> Fast drop
 
-<z> -> Rotate counter-clockwise
+z -> Rotate counter-clockwise

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-const float TICK_INT = 1.02f; // 20 ms
+const float TICK_INT = 0.5f; // 800 ms
 float elapsed_time = 0.0f; // elapsed time since last tick
 
 
@@ -118,6 +118,7 @@ void draw_game_box() {
 }
 
 // pos relative to top-left corner of matrix (0, 0)
+// TODO: no vector2, can be represented with decimals
 void draw_tetromino(Vector2* pos, TetrominoType type, Rotation rotation) {
     u16 pattern = tetrominoes[type].patterns[rotation];
 
@@ -125,7 +126,7 @@ void draw_tetromino(Vector2* pos, TetrominoType type, Rotation rotation) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
                 DrawTextureEx(tetromino_block,
-                    (Vector2) { 240 - 16 + (pos->x + x) * 32, (pos->y + y) * 32 },
+                    (Vector2) { 240 - 16 + (pos->x + x) * 32, ((pos->y + y) * 32) - 32 },
                     0.0, 2.0, get_tetromino_color(type)
                 );
             }
@@ -139,7 +140,11 @@ TetrominoType get_random_tetromino() {
 
 // called every tick-frame (defined as tick-int const)
 void tick() {
-    state.current_position.y++;
+    if (!(state.current_position.y > 18)) {
+        state.current_position.y++;
+    }
+    TraceLog(LOG_INFO, "%f", state.current_position.y);
+
     elapsed_time = 0.0f;
 }
 

@@ -138,19 +138,45 @@ TetrominoType get_random_tetromino() {
     return (TetrominoType) GetRandomValue(0, TETROMINO_COUNT - 1);
 }
 
+
+void spawn_new_tetromino() {
+    state.current_tetromino = get_random_tetromino();
+    state.current_rotation = ZERO;
+    state.current_position = (Vector2) { 4, 0 };
+}
+
+void check_input() {
+    if (IsKeyPressed(KEY_LEFT)) {
+        state.current_position.x--;
+    }
+
+    if (IsKeyPressed(KEY_RIGHT)) {
+        state.current_position.x++;
+    }
+
+    if (IsKeyPressed(KEY_DOWN)) {
+        state.current_position.y++;
+    }
+
+    if (IsKeyPressed(KEY_UP)) {
+        state.current_rotation = (state.current_rotation + 1) % 4;
+    }
+}
+
 // called every tick-frame (defined as tick-int const)
 void tick() {
     if (!(state.current_position.y > 18)) {
         state.current_position.y++;
+    } else {
+        spawn_new_tetromino();
     }
-    TraceLog(LOG_INFO, "%f", state.current_position.y);
 
     elapsed_time = 0.0f;
 }
 
 // called every frame
 void update() {
-
+    check_input();
 }
 
 // (also) called every frame
@@ -172,6 +198,7 @@ void check_for_tick() {
         tick();
     }
 }
+
 
 int main() {
     init();

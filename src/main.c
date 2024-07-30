@@ -1,6 +1,11 @@
 #include <raylib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
+
+const float TICK_INT = 1.02f; // 20 ms
+float elapsed_time = 0.0f; // elapsed time since last tick
+
 
 // personal typedefs
 typedef uint8_t u8;
@@ -86,7 +91,7 @@ GameState state = {
     .matrix = {0},
     .current_tetromino = TETROMINO_STRAIGHT,
     .current_rotation = ZERO,
-    .current_position = (Vector2) { 0, 0 } // position relative to 2d grid (top-left)
+    .current_position = (Vector2) { 1, 0 } // position relative to 2d grid (top-left)
 };
 
 // init window
@@ -131,16 +136,40 @@ TetrominoType get_random_tetromino() {
     return (TetrominoType) GetRandomValue(0, TETROMINO_COUNT - 1);
 }
 
+// called every tick-frame (defined as tick-int const)
+void tick() {
+    state.current_position.y++;
+    elapsed_time = 0.0f;
+}
+
+// called every frame
+void update() {
+
+}
+
+// (and also do the tick 🤫)
+void check_for_tick() {
+    elapsed_time += GetFrameTime();
+
+    if (elapsed_time >= TICK_INT) {
+        tick();
+    }
+}
+
 int main() {
     init();
 
-    while (!WindowShouldClose())
-    {
+    while (!WindowShouldClose()) {
+        check_for_tick(); // "update"
+        update();
+
+
+        // draw
         BeginDrawing();
         ClearBackground(bg);
 
         draw_game_box();
-        draw_tetromino(&(Vector2){0, 0}, TETROMINO_J, 0);
+        draw_tetromino(&state.current_position, state.current_tetromino, state.current_rotation);
 
         EndDrawing();
     }

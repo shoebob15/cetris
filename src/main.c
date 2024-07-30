@@ -96,10 +96,11 @@ GameState state = {
 
 // init window
 void init() {
-   InitWindow(800, 640, "Cetris");
-   SetTargetFPS(60);
+    SetExitKey(0); // no exit with esc
+    InitWindow(800, 640, "Cetris");
+    SetTargetFPS(60);
 
-   tetromino_block = LoadTexture("assets/tetromino_block.png");
+    tetromino_block = LoadTexture("assets/tetromino_block.png");
 }
 
 void draw_game_box() {
@@ -147,6 +148,17 @@ void update() {
 
 }
 
+// (also) called every frame
+void draw() {
+    BeginDrawing();
+    ClearBackground(bg);
+
+    draw_game_box();
+    draw_tetromino(&state.current_position, state.current_tetromino, state.current_rotation);
+
+    EndDrawing();
+}
+
 // (and also do the tick 🤫)
 void check_for_tick() {
     elapsed_time += GetFrameTime();
@@ -163,15 +175,7 @@ int main() {
         check_for_tick(); // "update"
         update();
 
-
-        // draw
-        BeginDrawing();
-        ClearBackground(bg);
-
-        draw_game_box();
-        draw_tetromino(&state.current_position, state.current_tetromino, state.current_rotation);
-
-        EndDrawing();
+        draw();
     }
 
     CloseWindow();

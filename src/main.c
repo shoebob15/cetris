@@ -24,17 +24,53 @@ typedef enum {
     TETROMINO_SQUARE,
     TETROMINO_T,
     TETROMINO_L,
-    TETROMINO_SKREW
+    TETROMINO_J,
+    TETROMINO_S,
+    TETROMINO_Z,
+    TETROMINO_COUNT
 } TetrominoType;
 
+Color get_tetromino_color(TetrominoType t) {
+    switch(t) {
+        case TETROMINO_STRAIGHT: return (Color) { 0, 255, 255, 255 };
+        case TETROMINO_SQUARE: return (Color) { 255, 255, 0, 255 };
+        case TETROMINO_T: return (Color) { 255, 0, 255, 255 };
+        case TETROMINO_L: return (Color) { 255, 165, 0, 255 };
+        case TETROMINO_J: return (Color) { 0, 0, 255, 255 };
+        case TETROMINO_S: return (Color) { 0, 255, 0, 255 };
+        case TETROMINO_Z: return (Color) { 255, 0, 0, 255 };
+        default: return (Color) { 255, 255, 255, 255 };
+    }
+}
+
+// tetromino patterns stored in 16-bit integers
+typedef struct {
+    u16 patterns[4];
+} Tetromino;
+
+// Tetromino definitions
+Tetromino tetrominoes[TETROMINO_COUNT] = {
+    // I
+    { .patterns = { 0x0F00, 0x2222, 0x0F00, 0x2222 } },
+    // O
+    { .patterns = { 0x0660, 0x0660, 0x0660, 0x0660 } },
+    // T
+    { .patterns = { 0x0E40, 0x4640, 0x4E00, 0x4C40 } },
+    // L
+    { .patterns = { 0x0E20, 0x44C0, 0x8E00, 0xC440 } },
+    // J
+    { .patterns = { 0x0E80, 0x6440, 0x2E00, 0x4460 } },
+    // S
+    { .patterns = { 0x06C0, 0x4620, 0x06C0, 0x4620 } },
+    // Z
+    { .patterns = { 0x0C60, 0x2640, 0x0C60, 0x2640 } },
+};
 
 typedef struct {
     u8 matrix[20][10]; // 20x10 grid (0 empty, 1 filled)
 } GameState;
 
-GameState state = (GameState) {
-    .matrix = {0} // init to empty
-};
+GameState state = { .matrix = {0} }; // init to empty
 
 // init window
 void init() {
@@ -44,7 +80,7 @@ void init() {
    tetromino_block = LoadTexture("assets/tetromino_block.png");
 }
 
-void draw_game_board() {
+void draw_game_box() {
     for (int r = 0; r < 2; r++) {
         for (int i = 0; i < 20; i++) {
             DrawTextureEx(tetromino_block,
@@ -58,14 +94,30 @@ void draw_game_board() {
     }
 }
 
+void draw_tetromino(Vector2 pos, TetrominoType type, int rotation) {
+    u16 pattern = tetrominoes[type].patterns[rotation % 4];
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                DrawTextureEx(tetromino_block,
+                    (Vector2) { pos.x + x * 32, pos.y + y * 32 },
+                    0.0, 2.0, get_tetromino_color(type)
+                );
+            }
+        }
+    }
+}
+
 int main() {
     init();
 
     while (!WindowShouldClose())
     {
         BeginDrawing();
-        draw_game_board();
         ClearBackground(bg);
+
+        draw_game_box();
+        draw_tetromino((Vector2){280, 0}, TETROMINO_J, 0);
 
         EndDrawing();
     }

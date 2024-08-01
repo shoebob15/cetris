@@ -21,6 +21,8 @@ typedef int64_t i64;
 
 // sprites
 Texture tetromino_block;
+Font font_b; // bold
+Font font_r; // regular
 
 // colors
 Color bg = (Color) { 28, 28, 28, 255 }; // bg color
@@ -98,14 +100,16 @@ typedef struct {
     Rotation current_rotation;
     Vector2 current_position;
     bool game_over;
+    GameScreen screen;
 } GameState;
 
 GameState state = {
     .matrix = {0},
     .current_tetromino = TETROMINO_STRAIGHT,
     .current_rotation = ZERO,
-    .current_position = (Vector2) { 1, 0 }, // position relative to 2d grid (top-left)
-    .game_over = false
+    .current_position = (Vector2) { 0, -1 }, // position relative to 2d grid (top-left)
+    .game_over = false,
+    .screen = MENU
 };
 
 // init window
@@ -115,6 +119,8 @@ void init() {
     SetTargetFPS(60);
 
     tetromino_block = LoadTexture("assets/tetromino_block.png");
+    font_b = LoadFont("assets/font_b.ttf");
+    font_r = LoadFont("assets/font_r.ttf");
 }
 
 void draw_game_box() {
@@ -157,6 +163,15 @@ void spawn_new_tetromino() {
     state.current_tetromino = get_random_tetromino();
     state.current_rotation = ZERO;
     state.current_position = (Vector2) { 4, 0 };
+}
+
+void reset_matrix() {
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 20; y++) {
+            state.matrix[y][x].active = false;
+            state.matrix[y][x].color = BLACK;
+        }
+    }
 }
 
 
@@ -223,6 +238,19 @@ void check_input() {
 
     if (IsKeyReleased(KEY_DOWN)) TICK_INT = 1.0f;
 
+    // menu-state stuff
+
+    if (IsKeyPressed(KEY_ENTER) && state.screen == MENU) {
+        state.screen = PLAYING;
+        spawn_new_tetromino();
+    }
+
+    if (IsKeyPressed(KEY_ENTER) && state.screen == GAME_OVER) {
+        state.screen = PLAYING;
+        reset_matrix();
+        spawn_new_tetromino();
+    }
+
     if (IsKeyPressed(KEY_UP) && can_rotate()) state.current_rotation = (state.current_rotation + 1) % 4;
 }
 
@@ -253,6 +281,35 @@ void draw_matrix() {
     }
 }
 
+void draw_menus() {
+    switch (state.screen) {
+        case MENU:
+            DrawTextEx(font_b, "TETRIS",
+                (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_b, "TETRIS", 100.0f, 1.0f).x / 2),
+                    100 }, 100.0f, 1.0f, WHITE
+            );
+
+            DrawTextEx(font_b, "Press <ENTER> to start",
+                (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_r, "Press <ENTER> to start", 50.0f, 1.0f).x / 2.0f + 35),
+                    250 }, 50.0f, 1.0f, WHITE
+            );
+            break;
+        case GAME_OVER:
+            DrawTextEx(font_b, "GAME OVER",
+                (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_b, "GAME OVER", 100.0f, 1.0f).x / 2),
+                    100 }, 100.0f, 1.0f, WHITE
+            );
+
+            DrawTextEx(font_b, "Press <ENTER> to restart",
+                (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_r, "Press <ENTER> to restart", 50.0f, 1.0f).x / 2.0f + 35),
+                    250 }, 50.0f, 1.0f, WHITE
+            );
+            break;
+        case PLAYING:
+            break;
+    }
+}
+
 void check_for_full_lines() {
     for (int y = 0; y < 20; y++) {
         bool full = true;
@@ -278,6 +335,7 @@ void check_for_game_over() {
     for (int x = 1; x < 10; x++) {
         if (state.matrix[0][x].active) {
             state.game_over = true;
+            state.screen = GAME_OVER;
             break;
         }
     }
@@ -333,6 +391,7 @@ void draw() {
     draw_game_box();
     draw_tetromino(&state.current_position, state.current_tetromino, state.current_rotation);
     draw_matrix();
+    draw_menus();
 
     EndDrawing();
 }
@@ -341,7 +400,7 @@ void draw() {
 void check_for_tick() {
     elapsed_time += GetFrameTime();
 
-    if (elapsed_time >= TICK_INT) {
+    if (elapsed_time >= TICK_INT && state.screen == PLAYING) {
         tick();
     }
 }

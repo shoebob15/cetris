@@ -35,3 +35,10 @@ Prebuilt binaries for most platforms are in the Github releases tab (TODO)
 space -> Fast drop
 
 z -> Rotate counter-clockwise
+
+
+# TODO
+- [ ] High score
+- [ ] Pause menu
+- [ ] Levels and speed increase
+- [ ] Different game modes

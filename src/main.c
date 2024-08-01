@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 float TICK_INT = 0.5f; // 800 ms (not const for speeding up the game when holding down)
 float elapsed_time = 0.0f; // elapsed time since last tick
@@ -101,6 +102,7 @@ typedef struct {
     Vector2 current_position;
     bool game_over;
     GameScreen screen;
+    u32 score;
 } GameState;
 
 GameState state = {
@@ -109,7 +111,8 @@ GameState state = {
     .current_rotation = ZERO,
     .current_position = (Vector2) { 0, -1 }, // position relative to 2d grid (top-left)
     .game_over = false,
-    .screen = MENU
+    .screen = MENU,
+    .score = 0
 };
 
 // init window
@@ -165,13 +168,16 @@ void spawn_new_tetromino() {
     state.current_position = (Vector2) { 4, 0 };
 }
 
-void reset_matrix() {
+void reset_game() {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 20; y++) {
             state.matrix[y][x].active = false;
             state.matrix[y][x].color = BLACK;
         }
     }
+
+    state.game_over = false;
+    state.score = 0;
 }
 
 
@@ -247,7 +253,7 @@ void check_input() {
 
     if (IsKeyPressed(KEY_ENTER) && state.screen == GAME_OVER) {
         state.screen = PLAYING;
-        reset_matrix();
+        reset_game();
         spawn_new_tetromino();
     }
 
@@ -294,6 +300,7 @@ void draw_menus() {
                     250 }, 50.0f, 1.0f, WHITE
             );
             break;
+
         case GAME_OVER:
             DrawTextEx(font_b, "GAME OVER",
                 (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_b, "GAME OVER", 100.0f, 1.0f).x / 2),
@@ -305,8 +312,20 @@ void draw_menus() {
                     250 }, 50.0f, 1.0f, WHITE
             );
             break;
-        case PLAYING:
+
+        case PLAYING: {
+            char scoreText[12];
+            sprintf(scoreText, "%u", state.score);
+
+            DrawTextEx(font_b, "SCORE:",
+                (Vector2) { 30, 50 }, 40.0f, 1.0f, WHITE
+            );
+
+            DrawTextEx(font_b, scoreText,
+                (Vector2) { 30, 100 }, 60.0f, 1.0f, WHITE
+            );
             break;
+        }
     }
 }
 
@@ -322,6 +341,8 @@ void check_for_full_lines() {
         }
 
         if (full) {
+            state.score += 100;
+
             for (int i = y; i > 0; i--) {
                 for (int x = 0; x < 10; x++) {
                     state.matrix[i][x] = state.matrix[i - 1][x];

@@ -2,7 +2,7 @@
 ### Yet another Tetris clone witten in C utilizing the [Raylib](https://github.com/raysan5/raylib) library
 
 # Screenshots
-TODO
+![Screenshot 2024-08-01 at 12 11 50 AM](https://github.com/user-attachments/assets/27341919-5276-4f67-87a9-e23db1b02fc2)
 
 # Building
 1. Clone the repository

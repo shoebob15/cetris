@@ -210,7 +210,7 @@ void check_input() {
 
     if (IsKeyPressed(KEY_RIGHT) && can_move_right()) state.current_position.x++;
 
-    if (IsKeyPressed(KEY_DOWN)) TICK_INT = 0.2f;
+    if (IsKeyPressed(KEY_DOWN)) TICK_INT = 0.05f;
 
     if (IsKeyReleased(KEY_DOWN)) TICK_INT = 1.0f;
 
@@ -244,6 +244,27 @@ void draw_matrix() {
     }
 }
 
+void check_for_full_lines() {
+    for (int y = 0; y < 20; y++) {
+        bool full = true;
+
+        for (int x = 1; x < 10; x++) {
+            if (!state.matrix[y][x].active) {
+                full = false;
+                break;
+            }
+        }
+
+        if (full) {
+            for (int i = y; i > 0; i--) {
+                for (int x = 0; x < 10; x++) {
+                    state.matrix[i][x] = state.matrix[i - 1][x];
+                }
+            }
+        }
+    }
+}
+
 
 // called every tick-frame (defined as tick-int const)
 void tick() {
@@ -271,8 +292,11 @@ void tick() {
     } else {
         state.current_position.y--; // TODO: jank
         commit_current_tetromino_to_matrix();
+        check_for_full_lines();
         spawn_new_tetromino();
     }
+
+
 
     elapsed_time = 0.0f;
 }

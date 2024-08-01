@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-const float TICK_INT = 0.5f; // 800 ms
+float TICK_INT = 0.5f; // 800 ms (not const for speeding up the game when holding down)
 float elapsed_time = 0.0f; // elapsed time since last tick
 
 
@@ -140,34 +140,48 @@ TetrominoType get_random_tetromino() {
 
 
 void spawn_new_tetromino() {
-    state.current_tetromino = get_random_tetromino();
+    state.current_tetromino = TETROMINO_SQUARE;
     state.current_rotation = ZERO;
     state.current_position = (Vector2) { 4, 0 };
 }
 
 void check_input() {
-    if (IsKeyPressed(KEY_LEFT)) {
-        state.current_position.x--;
-    }
+    if (IsKeyPressed(KEY_LEFT)) state.current_position.x--;
 
-    if (IsKeyPressed(KEY_RIGHT)) {
-        state.current_position.x++;
-    }
+    if (IsKeyPressed(KEY_RIGHT)) state.current_position.x++;
 
-    if (IsKeyPressed(KEY_DOWN)) {
-        state.current_position.y++;
-    }
+    if (IsKeyPressed(KEY_DOWN)) TICK_INT = 0.2f;
 
-    if (IsKeyPressed(KEY_UP)) {
-        state.current_rotation = (state.current_rotation + 1) % 4;
-    }
+    if (IsKeyReleased(KEY_DOWN)) TICK_INT = 1.0f;
+
+    if (IsKeyPressed(KEY_UP)) state.current_rotation = (state.current_rotation + 1) % 4;
 }
 
 // called every tick-frame (defined as tick-int const)
 void tick() {
-    if (!(state.current_position.y > 18)) {
+    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    Vector2 pos = state.current_position;
+
+    // check collision with bottom
+    bool canMoveDown = true;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                // check if a block is at the bottom or touching another block
+                if (pos.y + y >= 20 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)]) {
+                    canMoveDown = false;
+                    break;
+                }
+            }
+        }
+        if (!canMoveDown) break;
+    }
+
+    if (canMoveDown) {
         state.current_position.y++;
     } else {
+        // TODO: commit tetromino to matrix
         spawn_new_tetromino();
     }
 

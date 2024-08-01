@@ -25,6 +25,12 @@ Texture tetromino_block;
 Font font_b; // bold
 Font font_r; // regular
 
+// sounds
+Sound clear;
+Sound death;
+Sound select;
+Sound song;
+
 // colors
 Color bg = (Color) { 28, 28, 28, 255 }; // bg color
 
@@ -117,6 +123,7 @@ GameState state = {
 
 // init window
 void init() {
+    InitAudioDevice();
     SetExitKey(0); // no exit with esc
     InitWindow(800, 640, "Cetris");
     SetTargetFPS(60);
@@ -124,6 +131,11 @@ void init() {
     tetromino_block = LoadTexture("assets/tetromino_block.png");
     font_b = LoadFont("assets/font_b.ttf");
     font_r = LoadFont("assets/font_r.ttf");
+
+    clear = LoadSound("assets/clear.wav");
+    death = LoadSound("assets/death.wav");
+    select = LoadSound("assets/select.wav");
+    song = LoadSound("assets/song.wav");
 }
 
 void draw_game_box() {
@@ -246,13 +258,9 @@ void check_input() {
 
     // menu-state stuff
 
-    if (IsKeyPressed(KEY_ENTER) && state.screen == MENU) {
+    if (IsKeyPressed(KEY_ENTER) && (state.screen == GAME_OVER || state.screen == MENU)) {
         state.screen = PLAYING;
-        spawn_new_tetromino();
-    }
-
-    if (IsKeyPressed(KEY_ENTER) && state.screen == GAME_OVER) {
-        state.screen = PLAYING;
+        PlaySound(select);
         reset_game();
         spawn_new_tetromino();
     }
@@ -342,6 +350,7 @@ void check_for_full_lines() {
 
         if (full) {
             state.score += 100;
+            PlaySound(clear);
 
             for (int i = y; i > 0; i--) {
                 for (int x = 0; x < 10; x++) {
@@ -357,6 +366,7 @@ void check_for_game_over() {
         if (state.matrix[0][x].active) {
             state.game_over = true;
             state.screen = GAME_OVER;
+            PlaySound(death);
             break;
         }
     }
@@ -399,9 +409,17 @@ void tick() {
     elapsed_time = 0.0f;
 }
 
+void play_song() {
+    if (!IsSoundPlaying(song)) {
+        PlaySound(song);
+    }
+}
+
 // called every frame
 void update() {
     check_input();
+
+    play_song();
 }
 
 // (also) called every frame

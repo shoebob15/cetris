@@ -9,15 +9,18 @@
 
 ```$ git clone https://github.com/shoebob15/cetris```
 
-2. Generate CMake build files
+2. Move into the Cetris directory
+```$ cd cetris```
+
+4. Generate CMake build files
 
 ```$ cmake -S . -B build```
 
-3. Build the project
+4. Build the project
 
 ```$ cmake --build build```
 
-4. Run the output file
+5. Run the output file
 
 ```$ ./build/cetris```
 
@@ -38,7 +41,9 @@ z -> Rotate counter-clockwise
 
 
 # TODO
+- [ ] Finish controls
 - [ ] High score
 - [ ] Pause menu
 - [ ] Levels and speed increase
 - [ ] Different game modes
+- [ ] Package assets

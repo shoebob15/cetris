@@ -81,7 +81,12 @@ Tetromino tetrominoes[TETROMINO_COUNT] = {
 };
 
 typedef struct {
-    u8 matrix[20][10]; // 20x10 grid (0 empty, 1 filled)
+    u8 active;
+    Color color;
+} MatrixSquare;
+
+typedef struct {
+    MatrixSquare matrix[20][10]; // 20x10 grid (if color == black)
     TetrominoType current_tetromino;
     Rotation current_rotation;
     Vector2 current_position;
@@ -155,7 +160,7 @@ int can_move_left() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x - 1)]) {
+                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x - 1)].active) {
                     return false;
                 }
             }
@@ -172,7 +177,7 @@ int can_move_right() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x + 1)]) {
+                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x + 1)].active) {
                     return false;
                 }
             }
@@ -190,7 +195,7 @@ int can_rotate() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x < 1 || pos.x + x > 9 || pos.y + y > 19 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)]) {
+                if (pos.x + x < 1 || pos.x + x > 9 || pos.y + y > 19 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
                     return false;
                 }
             }
@@ -212,6 +217,32 @@ void check_input() {
     if (IsKeyPressed(KEY_UP) && can_rotate()) state.current_rotation = (state.current_rotation + 1) % 4;
 }
 
+void commit_current_tetromino_to_matrix() {
+    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    Vector2 pos = state.current_position;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active = 1;
+                state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].color = get_tetromino_color(state.current_tetromino);
+            }
+        }
+    }
+}
+
+void draw_matrix() {
+    for (int x = 0; x < 10; x++) {
+        for (int y = 0; y < 20; y++) {
+            if (state.matrix[y][x].active) {
+                DrawTextureEx(tetromino_block,
+                    (Vector2) { 240 - 16 + x * 32, y * 32 },
+                    0.0, 2.0, state.matrix[y][x].color
+                );
+            }
+        }
+    }
+}
 
 
 // called every tick-frame (defined as tick-int const)
@@ -226,7 +257,7 @@ void tick() {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
                 // check if a block is at the bottom or touching another block
-                if (pos.y + y >= 20 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)]) {
+                if (pos.y + y >= 20 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
                     canMoveDown = false;
                     break;
                 }
@@ -238,7 +269,8 @@ void tick() {
     if (canMoveDown) {
         state.current_position.y++;
     } else {
-
+        state.current_position.y--; // TODO: jank
+        commit_current_tetromino_to_matrix();
         spawn_new_tetromino();
     }
 
@@ -257,6 +289,7 @@ void draw() {
 
     draw_game_box();
     draw_tetromino(&state.current_position, state.current_tetromino, state.current_rotation);
+    draw_matrix();
 
     EndDrawing();
 }

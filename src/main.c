@@ -1,4 +1,3 @@
-#include <MacTypes.h>
 #include <raylib.h>
 #include <stdint.h>
 #include <stdbool.h>

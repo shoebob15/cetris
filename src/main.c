@@ -140,22 +140,79 @@ TetrominoType get_random_tetromino() {
 
 
 void spawn_new_tetromino() {
-    state.current_tetromino = TETROMINO_SQUARE;
+    state.current_tetromino = get_random_tetromino();
     state.current_rotation = ZERO;
     state.current_position = (Vector2) { 4, 0 };
 }
 
-void check_input() {
-    if (IsKeyPressed(KEY_LEFT)) state.current_position.x--;
 
-    if (IsKeyPressed(KEY_RIGHT)) state.current_position.x++;
+
+// TODO: can_move_left, can_move_right, can_rotate all use the mostly same code - figure out way to abstract
+int can_move_left() {
+    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    Vector2 pos = state.current_position;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x - 1)]) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+int can_move_right() {
+    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    Vector2 pos = state.current_position;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x + 1)]) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+int can_rotate() {
+    Rotation next_rotation = (state.current_rotation + 1) % 4;
+    u16 pattern = tetrominoes[state.current_tetromino].patterns[next_rotation];
+    Vector2 pos = state.current_position;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                if (pos.x + x < 1 || pos.x + x > 9 || pos.y + y > 19 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)]) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+void check_input() {
+    if (IsKeyPressed(KEY_LEFT) && can_move_left()) state.current_position.x--;
+
+    if (IsKeyPressed(KEY_RIGHT) && can_move_right()) state.current_position.x++;
 
     if (IsKeyPressed(KEY_DOWN)) TICK_INT = 0.2f;
 
     if (IsKeyReleased(KEY_DOWN)) TICK_INT = 1.0f;
 
-    if (IsKeyPressed(KEY_UP)) state.current_rotation = (state.current_rotation + 1) % 4;
+    if (IsKeyPressed(KEY_UP) && can_rotate()) state.current_rotation = (state.current_rotation + 1) % 4;
 }
+
+
 
 // called every tick-frame (defined as tick-int const)
 void tick() {
@@ -181,7 +238,7 @@ void tick() {
     if (canMoveDown) {
         state.current_position.y++;
     } else {
-        // TODO: commit tetromino to matrix
+
         spawn_new_tetromino();
     }
 

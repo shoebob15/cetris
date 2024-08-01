@@ -2,22 +2,25 @@
 ### Yet another Tetris clone witten in C utilizing the [Raylib](https://github.com/raysan5/raylib) library
 
 # Screenshots
-TODO
+![Screenshot 2024-08-01 at 12 11 50 AM](https://github.com/user-attachments/assets/27341919-5276-4f67-87a9-e23db1b02fc2)
 
 # Building
 1. Clone the repository
 
 ```$ git clone https://github.com/shoebob15/cetris```
 
-2. Generate CMake build files
+2. Move into the Cetris directory
+```$ cd cetris```
+
+4. Generate CMake build files
 
 ```$ cmake -S . -B build```
 
-3. Build the project
+4. Build the project
 
 ```$ cmake --build build```
 
-4. Run the output file
+5. Run the output file
 
 ```$ ./build/cetris```
 
@@ -38,7 +41,9 @@ z -> Rotate counter-clockwise
 
 
 # TODO
+- [ ] Finish controls
 - [ ] High score
 - [ ] Pause menu
 - [ ] Levels and speed increase
 - [ ] Different game modes
+- [ ] Package assets

@@ -1,3 +1,4 @@
+#include <MacTypes.h>
 #include <raylib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -43,6 +44,12 @@ typedef enum {
     TWO,
     THREE
 } Rotation;
+
+typedef enum {
+    PLAYING,
+    MENU,
+    GAME_OVER
+} GameScreen;
 
 Color get_tetromino_color(TetrominoType t) {
     switch(t) {
@@ -90,13 +97,15 @@ typedef struct {
     TetrominoType current_tetromino;
     Rotation current_rotation;
     Vector2 current_position;
+    bool game_over;
 } GameState;
 
 GameState state = {
     .matrix = {0},
     .current_tetromino = TETROMINO_STRAIGHT,
     .current_rotation = ZERO,
-    .current_position = (Vector2) { 1, 0 } // position relative to 2d grid (top-left)
+    .current_position = (Vector2) { 1, 0 }, // position relative to 2d grid (top-left)
+    .game_over = false
 };
 
 // init window
@@ -265,6 +274,15 @@ void check_for_full_lines() {
     }
 }
 
+void check_for_game_over() {
+    for (int x = 1; x < 10; x++) {
+        if (state.matrix[0][x].active) {
+            state.game_over = true;
+            break;
+        }
+    }
+}
+
 
 // called every tick-frame (defined as tick-int const)
 void tick() {
@@ -293,6 +311,7 @@ void tick() {
         state.current_position.y--; // TODO: jank
         commit_current_tetromino_to_matrix();
         check_for_full_lines();
+        check_for_game_over();
         spawn_new_tetromino();
     }
 

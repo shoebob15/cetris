@@ -31,7 +31,7 @@ Sound select;
 Sound song;
 
 // colors
-Color bg = (Color) { 28, 28, 28, 255 }; // bg color
+Color bg;
 
 // tetromino types
 typedef enum {
@@ -110,15 +110,7 @@ typedef struct {
     u32 score;
 } GameState;
 
-GameState state = {
-    .matrix = {0},
-    .current_tetromino = TETROMINO_STRAIGHT,
-    .current_rotation = ZERO,
-    .current_position = (Vector2) { 0, -1 }, // position relative to 2d grid (top-left)
-    .game_over = false,
-    .screen = MENU,
-    .score = 0
-};
+GameState state;
 
 // init window
 void init() {
@@ -130,6 +122,16 @@ void init() {
     tetromino_block = LoadTexture("assets/tetromino_block.png");
     font_b = LoadFont("assets/font_b.ttf");
     font_r = LoadFont("assets/font_r.ttf");
+    bg = (Color) { 28, 28, 28, 255 }; // bg color
+
+    state = (GameState) {
+        .current_tetromino = TETROMINO_STRAIGHT,
+        .current_rotation = ZERO,
+        .current_position = (Vector2) { -5, -5 },
+        .game_over = false,
+        .screen = MENU,
+        .score = 0
+    };
 
     clear = LoadSound("assets/clear.wav");
     death = LoadSound("assets/death.wav");

@@ -87,9 +87,9 @@ Tetromino tetrominoes[TETROMINO_COUNT] = {
     // T
     { .patterns = { 0x0E40, 0x4640, 0x4E00, 0x4C40 } },
     // L
-    { .patterns = { 0x0E20, 0x44C0, 0xE800, 0xC440 } },
+    { .patterns = { 0x2E00, 0x4460, 0xE800, 0xC440 } },
     // J
-    { .patterns = { 0x0E80, 0x6440, 0x2E00, 0x4460 } },
+    { .patterns = { 0x8E00, 0x6440, 0x0E20, 0x44C0 } },
     // S
     { .patterns = { 0x06C0, 0x4620, 0x06C0, 0x4620 } },
     // Z
@@ -222,7 +222,7 @@ int can_move_left() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x - 1)].active) {
+                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
                     return false;
                 }
             }
@@ -239,7 +239,7 @@ int can_move_right() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x + 1)].active) {
+                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
                     return false;
                 }
             }

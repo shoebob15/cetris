@@ -266,6 +266,13 @@ int can_rotate() {
     return true;
 }
 
+// calculate the current level and it's speed
+void calculate_level() {
+    state.level = (state.lines / 10) + 1;
+
+    TICK_INT = 0.5f - (state.level * 0.05f); // TODO: time will stop at level 20
+}
+
 void check_input() {
     if (IsKeyPressed(KEY_LEFT) && can_move_left()) state.current_position.x--;
 
@@ -273,7 +280,7 @@ void check_input() {
 
     if (IsKeyPressed(KEY_DOWN)) TICK_INT = 0.05f;
 
-    if (IsKeyReleased(KEY_DOWN)) TICK_INT = 1.0f;
+    if (IsKeyReleased(KEY_DOWN)) calculate_level();
 
     if (IsKeyPressed(KEY_ENTER)) swap_tetromino_buffer();
 
@@ -394,13 +401,6 @@ void draw_menus() {
             break;
         }
     }
-}
-
-// calculate the current level and it's speed
-void calculate_level() {
-    state.level = (state.lines / 10) + 1;
-
-    TICK_INT = 0.5f - (state.level * 0.05f); // TODO: time will stop at level 20
 }
 
 void check_for_full_lines() {

@@ -79,6 +79,7 @@ typedef struct {
 
 // Tetromino definitions
 Tetromino tetrominoes[TETROMINO_COUNT] = {
+    // TODO: verify rotational patterns for L and J
     // I
     { .patterns = { 0x0F00, 0x2222, 0x0F00, 0x2222 } },
     // O
@@ -433,7 +434,7 @@ void check_for_full_lines() {
 
 void check_for_game_over() {
     for (int x = 1; x < 10; x++) {
-        if (state.matrix[0][x].active) {
+        if (state.matrix[1][x].active) {
             state.game_over = true;
             state.screen = GAME_OVER;
             PlaySound(death);

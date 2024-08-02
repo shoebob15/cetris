@@ -102,7 +102,7 @@ typedef struct {
 
 typedef struct {
     MatrixSquare matrix[20][10]; // 20x10 grid (if color == black)
-    TetrominoType current_tetromino;
+    TetrominoType current_tetrominoes[2]; // tetromino buffer (current, next)
     Rotation current_rotation;
     Vector2 current_position;
     bool game_over;
@@ -125,7 +125,7 @@ void init() {
     bg = (Color) { 28, 28, 28, 255 }; // bg color
 
     state = (GameState) {
-        .current_tetromino = TETROMINO_STRAIGHT,
+        .current_tetrominoes = { TETROMINO_STRAIGHT, TETROMINO_STRAIGHT },
         .current_rotation = ZERO,
         .current_position = (Vector2) { -5, -5 },
         .game_over = false,
@@ -174,9 +174,21 @@ TetrominoType get_random_tetromino() {
     return (TetrominoType) GetRandomValue(0, TETROMINO_COUNT - 1);
 }
 
+void randomize_tetromino_buffer() {
+    state.current_tetrominoes[0] = get_random_tetromino();
+    state.current_tetrominoes[1] = get_random_tetromino();
+}
+
+void swap_tetromino_buffer() {
+    TetrominoType tmp = state.current_tetrominoes[1];
+    state.current_tetrominoes[1] = state.current_tetrominoes[0];
+    state.current_tetrominoes[0] = tmp;
+}
+
 
 void spawn_new_tetromino() {
-    state.current_tetromino = get_random_tetromino();
+    state.current_tetrominoes[0] = state.current_tetrominoes[1];
+    state.current_tetrominoes[1] = get_random_tetromino();
     state.current_rotation = ZERO;
     state.current_position = (Vector2) { 4, 0 };
 }
@@ -197,7 +209,7 @@ void reset_game() {
 
 // TODO: can_move_left, can_move_right, can_rotate all use the mostly same code - figure out way to abstract
 int can_move_left() {
-    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[state.current_rotation];
     Vector2 pos = state.current_position;
 
     for (int y = 0; y < 4; y++) {
@@ -214,7 +226,7 @@ int can_move_left() {
 }
 
 int can_move_right() {
-    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[state.current_rotation];
     Vector2 pos = state.current_position;
 
     for (int y = 0; y < 4; y++) {
@@ -232,7 +244,7 @@ int can_move_right() {
 
 int can_rotate() {
     Rotation next_rotation = (state.current_rotation + 1) % 4;
-    u16 pattern = tetrominoes[state.current_tetromino].patterns[next_rotation];
+    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[next_rotation];
     Vector2 pos = state.current_position;
 
     for (int y = 0; y < 4; y++) {
@@ -257,11 +269,14 @@ void check_input() {
 
     if (IsKeyReleased(KEY_DOWN)) TICK_INT = 1.0f;
 
+    if (IsKeyPressed(KEY_ENTER)) swap_tetromino_buffer();
+
     // menu-state stuff
 
     if (IsKeyPressed(KEY_ENTER) && (state.screen == GAME_OVER || state.screen == MENU)) {
         state.screen = PLAYING;
         PlaySound(select);
+        randomize_tetromino_buffer();
         reset_game();
         spawn_new_tetromino();
     }
@@ -270,14 +285,14 @@ void check_input() {
 }
 
 void commit_current_tetromino_to_matrix() {
-    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[state.current_rotation];
     Vector2 pos = state.current_position;
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
                 state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active = 1;
-                state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].color = get_tetromino_color(state.current_tetromino);
+                state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].color = get_tetromino_color(state.current_tetrominoes[0]);
             }
         }
     }
@@ -326,7 +341,7 @@ void draw_menus() {
             char scoreText[12];
             sprintf(scoreText, "%u", state.score);
 
-            DrawTextEx(font_b, "SCORE:",
+            DrawTextEx(font_b, "SCORE",
                 (Vector2) { 30, 50 }, 40.0f, 1.0f, WHITE
             );
 
@@ -335,6 +350,16 @@ void draw_menus() {
             );
             break;
         }
+    }
+}
+
+void draw_tetromino_buffer() {
+    DrawTextEx(font_b, "NEXT",
+        (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_r, "NEXT", 40.0f, 1.0f).x / 2.0f - 275),
+            50 }, 40.0f, 1.0f, WHITE
+    );
+    if (state.screen == PLAYING) {
+        draw_tetromino(&(Vector2) { 12.5, 3.5 }, state.current_tetrominoes[1], 0);
     }
 }
 
@@ -377,7 +402,7 @@ void check_for_game_over() {
 
 // called every tick-frame (defined as tick-int const)
 void tick() {
-    u16 pattern = tetrominoes[state.current_tetromino].patterns[state.current_rotation];
+    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[state.current_rotation];
     Vector2 pos = state.current_position;
 
     // check collision with bottom
@@ -430,7 +455,8 @@ void draw() {
     ClearBackground(bg);
 
     draw_game_box();
-    draw_tetromino(&state.current_position, state.current_tetromino, state.current_rotation);
+    draw_tetromino(&state.current_position, state.current_tetrominoes[0], state.current_rotation);
+    draw_tetromino_buffer();
     draw_matrix();
     draw_menus();
 

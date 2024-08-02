@@ -39,6 +39,8 @@ space -> Fast drop
 
 z -> Rotate counter-clockwise
 
+enter -> swap the tetromino
+
 
 # TODO
 - [ ] Finish controls

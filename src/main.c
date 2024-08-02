@@ -86,7 +86,7 @@ Tetromino tetrominoes[TETROMINO_COUNT] = {
     // T
     { .patterns = { 0x0E40, 0x4640, 0x4E00, 0x4C40 } },
     // L
-    { .patterns = { 0x0E20, 0x44C0, 0x8E00, 0xC440 } },
+    { .patterns = { 0x0E20, 0x44C0, 0xE800, 0xC440 } },
     // J
     { .patterns = { 0x0E80, 0x6440, 0x2E00, 0x4460 } },
     // S

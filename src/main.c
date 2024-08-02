@@ -108,6 +108,8 @@ typedef struct {
     bool game_over;
     GameScreen screen;
     u32 score;
+    u8 level;
+    u8 lines;
 } GameState;
 
 GameState state;
@@ -130,7 +132,9 @@ void init() {
         .current_position = (Vector2) { -5, -5 },
         .game_over = false,
         .screen = MENU,
-        .score = 0
+        .score = 0,
+        .level = 1,
+        .lines = 0
     };
 
     clear = LoadSound("assets/clear.wav");
@@ -203,6 +207,8 @@ void reset_game() {
 
     state.game_over = false;
     state.score = 0;
+    state.level = 1;
+    state.lines = 0;
 }
 
 
@@ -311,6 +317,16 @@ void draw_matrix() {
     }
 }
 
+void draw_tetromino_buffer() {
+    DrawTextEx(font_b, "NEXT",
+        (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_r, "NEXT", 40.0f, 1.0f).x / 2.0f - 275),
+            50 }, 40.0f, 1.0f, WHITE
+    );
+    if (state.screen == PLAYING) {
+        draw_tetromino(&(Vector2) { 12.5, 3.5 }, state.current_tetrominoes[1], 0);
+    }
+}
+
 void draw_menus() {
     switch (state.screen) {
         case MENU:
@@ -341,6 +357,12 @@ void draw_menus() {
             char scoreText[12];
             sprintf(scoreText, "%u", state.score);
 
+            char linesText[12];
+            sprintf(linesText, "%u", state.lines);
+
+            char levelText[12];
+            sprintf(levelText, "%u", state.level);
+
             DrawTextEx(font_b, "SCORE",
                 (Vector2) { 30, 50 }, 40.0f, 1.0f, WHITE
             );
@@ -348,19 +370,37 @@ void draw_menus() {
             DrawTextEx(font_b, scoreText,
                 (Vector2) { 30, 100 }, 60.0f, 1.0f, WHITE
             );
+
+            DrawTextEx(font_b, "LINES",
+                (Vector2) { 30, 200 }, 40.0f, 1.0f, WHITE
+            );
+
+            DrawTextEx(font_b, linesText,
+                (Vector2) { 30, 250 }, 60.0f, 1.0f, WHITE
+            );
+
+            DrawTextEx(font_b, "LEVEL",
+                (Vector2) { 30, 350 }, 40.0f, 1.0f, WHITE
+            );
+
+            DrawTextEx(font_b, levelText,
+                (Vector2) { 30, 400 }, 60.0f, 1.0f, WHITE
+            );
+
+            draw_tetromino_buffer();
+
+
+
             break;
         }
     }
 }
 
-void draw_tetromino_buffer() {
-    DrawTextEx(font_b, "NEXT",
-        (Vector2) { GetScreenWidth() / 2.0f - (MeasureTextEx(font_r, "NEXT", 40.0f, 1.0f).x / 2.0f - 275),
-            50 }, 40.0f, 1.0f, WHITE
-    );
-    if (state.screen == PLAYING) {
-        draw_tetromino(&(Vector2) { 12.5, 3.5 }, state.current_tetrominoes[1], 0);
-    }
+// calculate the current level and it's speed
+void calculate_level() {
+    state.level = (state.lines / 10) + 1;
+
+    TICK_INT = 0.5f - (state.level * 0.05f); // TODO: time will stop at level 20
 }
 
 void check_for_full_lines() {
@@ -376,6 +416,10 @@ void check_for_full_lines() {
 
         if (full) {
             state.score += 100;
+            state.lines += 1;
+
+            calculate_level();
+
             PlaySound(clear);
 
             for (int i = y; i > 0; i--) {
@@ -398,6 +442,8 @@ void check_for_game_over() {
         }
     }
 }
+
+
 
 
 // called every tick-frame (defined as tick-int const)
@@ -456,7 +502,6 @@ void draw() {
 
     draw_game_box();
     draw_tetromino(&state.current_position, state.current_tetrominoes[0], state.current_rotation);
-    draw_tetromino_buffer();
     draw_matrix();
     draw_menus();
 

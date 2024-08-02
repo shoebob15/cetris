@@ -46,6 +46,6 @@ enter -> swap the tetromino
 - [ ] Finish controls
 - [ ] High score
 - [ ] Pause menu
-- [ ] Levels and speed increase
+- [x] Levels and speed increase
 - [ ] Different game modes
 - [ ] Package assets

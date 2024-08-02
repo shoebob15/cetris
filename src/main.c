@@ -368,6 +368,7 @@ void check_for_game_over() {
             state.game_over = true;
             state.screen = GAME_OVER;
             PlaySound(death);
+            StopSound(song);
             break;
         }
     }
@@ -411,7 +412,7 @@ void tick() {
 }
 
 void play_song() {
-    if (!IsSoundPlaying(song)) {
+    if (!IsSoundPlaying(song) && state.screen != GAME_OVER) {
         PlaySound(song);
     }
 }

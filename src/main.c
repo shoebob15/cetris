@@ -160,15 +160,18 @@ void draw_game_box() {
 
 // pos relative to top-left corner of matrix (0, 0)
 // TODO: no vector2, can be represented with decimals
-void draw_tetromino(Vector2* pos, TetrominoType type, Rotation rotation) {
+void draw_tetromino(Vector2* pos, TetrominoType type, Rotation rotation, float opacity) {
     u16 pattern = tetrominoes[type].patterns[rotation];
+    Color color = get_tetromino_color(type);
+
+    color = Fade(color, opacity);
 
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
                 DrawTextureEx(tetromino_block,
                     (Vector2) { 240 - 16 + (pos->x + x) * 32, ((pos->y + y) * 32) - 32 },
-                    0.0, 2.0, get_tetromino_color(type)
+                    0.0, 2.0, color
                 );
             }
         }
@@ -285,6 +288,32 @@ int can_rotate_counter_clockwise() {
     return true;
 }
 
+int can_move_down_ex(Vector2 pos, TetrominoType t, Rotation rotation) {
+    u16 pattern = tetrominoes[t].patterns[rotation];
+
+    // check collision with bottom
+    bool canMoveDown = true;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                // check if a block is at the bottom or touching another block
+                if (pos.y + y >= 20 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
+                    canMoveDown = false;
+                    break;
+                }
+            }
+        }
+        if (!canMoveDown) break;
+    }
+
+    return canMoveDown;
+}
+
+int can_move_down() {
+    return can_move_down_ex(state.current_position, state.current_tetrominoes[0], state.current_rotation);
+}
+
 // calculate the current level and it's speed
 void calculate_level() {
     state.level = (state.lines / 10) + 1;
@@ -351,7 +380,7 @@ void draw_tetromino_buffer() {
             50 }, 40.0f, 1.0f, WHITE
     );
     if (state.screen == PLAYING) {
-        draw_tetromino(&(Vector2) { 12.5, 3.5 }, state.current_tetrominoes[1], 0);
+        draw_tetromino(&(Vector2) { 12.5, 3.5 }, state.current_tetrominoes[1], 0, 1.0);
     }
 }
 
@@ -424,6 +453,16 @@ void draw_menus() {
     }
 }
 
+void draw_tetromino_drop_preview() {
+    Vector2 pos = state.current_position;
+
+    while (can_move_down_ex(pos, state.current_tetrominoes[0], state.current_rotation)) {
+        pos.y += 1;
+    }
+
+    draw_tetromino(&pos, state.current_tetrominoes[0], state.current_rotation, 0.3);
+}
+
 void check_for_full_lines() {
     for (int y = 0; y < 20; y++) {
         bool full = true;
@@ -464,31 +503,9 @@ void check_for_game_over() {
     }
 }
 
-
-
-
 // called every tick-frame (defined as tick-int const)
 void tick() {
-    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[state.current_rotation];
-    Vector2 pos = state.current_position;
-
-    // check collision with bottom
-    bool canMoveDown = true;
-
-    for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++) {
-            if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                // check if a block is at the bottom or touching another block
-                if (pos.y + y >= 20 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
-                    canMoveDown = false;
-                    break;
-                }
-            }
-        }
-        if (!canMoveDown) break;
-    }
-
-    if (canMoveDown) {
+    if (can_move_down()) {
         state.current_position.y++;
     } else {
         state.current_position.y--; // TODO: jank
@@ -521,7 +538,8 @@ void draw() {
     ClearBackground(bg);
 
     draw_game_box();
-    draw_tetromino(&state.current_position, state.current_tetrominoes[0], state.current_rotation);
+    draw_tetromino(&state.current_position, state.current_tetrominoes[0], state.current_rotation, 1.0);
+    draw_tetromino_drop_preview();
     draw_matrix();
     draw_menus();
 

@@ -3,7 +3,7 @@
 
 # Screenshots
 ![Screenshot 2024-08-02 at 8 28 47 PM](https://github.com/user-attachments/assets/c4570293-c76b-4f0b-9adb-57b7ffbae843)
-919-5276-4f67-87a9-e23db1b02fc2)
+
 
 # Building
 1. Clone the repository

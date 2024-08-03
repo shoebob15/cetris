@@ -214,7 +214,7 @@ void reset_game() {
 
 
 
-// TODO: can_move_left, can_move_right, can_rotate all use the mostly same code - figure out way to abstract
+// !!!TODO: can_move_left, can_move_right, can_rotate all use the mostly same code - figure out way to abstract
 int can_move_left() {
     u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[state.current_rotation];
     Vector2 pos = state.current_position;
@@ -249,8 +249,26 @@ int can_move_right() {
     return true;
 }
 
-int can_rotate() {
+int can_rotate_clockwise() {
     Rotation next_rotation = (state.current_rotation + 1) % 4;
+    u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[next_rotation];
+    Vector2 pos = state.current_position;
+
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if ((pattern >> (15 - (y * 4 + x))) & 1) {
+                if (pos.x + x < 1 || pos.x + x > 9 || pos.y + y > 19 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x)].active) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+int can_rotate_counter_clockwise() {
+    Rotation next_rotation = (state.current_rotation + 3) % 4;
     u16 pattern = tetrominoes[state.current_tetrominoes[0]].patterns[next_rotation];
     Vector2 pos = state.current_position;
 
@@ -295,7 +313,9 @@ void check_input() {
         spawn_new_tetromino();
     }
 
-    if (IsKeyPressed(KEY_UP) && can_rotate()) state.current_rotation = (state.current_rotation + 1) % 4;
+    if (IsKeyPressed(KEY_UP) && can_rotate_clockwise()) state.current_rotation = (state.current_rotation + 1) % 4;
+
+    if (IsKeyPressed(KEY_Z) && can_rotate_counter_clockwise()) state.current_rotation = (state.current_rotation + 3) % 4;
 }
 
 void commit_current_tetromino_to_matrix() {

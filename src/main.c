@@ -222,7 +222,7 @@ int can_move_left() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x - 1)].active) {
+                if (pos.x + x <= 1 || state.matrix[(int)(pos.y + y - 1)][(int)(pos.x + x - 1)].active) {
                     return false;
                 }
             }
@@ -239,7 +239,7 @@ int can_move_right() {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if ((pattern >> (15 - (y * 4 + x))) & 1) {
-                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y)][(int)(pos.x + x + 1)].active) {
+                if (pos.x + x >= 9 || state.matrix[(int)(pos.y + y - 1)][(int)(pos.x + x + 1)].active) {
                     return false;
                 }
             }
@@ -492,7 +492,6 @@ void play_song() {
 // called every frame
 void update() {
     check_input();
-
     play_song();
 }
 

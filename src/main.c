@@ -321,6 +321,12 @@ void calculate_level() {
     TICK_INT = 0.5f - (state.level * 0.05f); // TODO: time will stop at level 20
 }
 
+void hard_drop() {
+    while (can_move_down()) {
+        state.current_position.y++;
+    }
+}
+
 void check_input() {
     if (IsKeyPressed(KEY_LEFT) && can_move_left()) state.current_position.x--;
 
@@ -343,6 +349,8 @@ void check_input() {
     }
 
     if (IsKeyPressed(KEY_UP) && can_rotate_clockwise()) state.current_rotation = (state.current_rotation + 1) % 4;
+
+    if (IsKeyPressed(KEY_SPACE)) hard_drop();
 
     if (IsKeyPressed(KEY_Z) && can_rotate_counter_clockwise()) state.current_rotation = (state.current_rotation + 3) % 4;
 }

@@ -35,7 +35,7 @@ Prebuilt binaries for most platforms are in the Github releases tab (TODO)
 
 ↓ -> Slow drop
 
-space -> Fast drop (will implement when there is a drop preview)
+space -> Fast drop
 
 z -> Rotate counter-clockwise
 
@@ -43,10 +43,10 @@ enter -> swap the tetromino
 
 
 # TODO
-- [ ] Finish controls
+- [x] Finish controls
 - [ ] High score
 - [ ] Pause menu
 - [x] Levels and speed increase
-- [ ] Next drop preview
+- [x] Next drop preview
 - [ ] Different game modes
 - [ ] Package assets

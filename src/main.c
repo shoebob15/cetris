@@ -388,7 +388,7 @@ void draw_tetromino_buffer() {
             50 }, 40.0f, 1.0f, WHITE
     );
     if (state.screen == PLAYING) {
-        draw_tetromino(&(Vector2) { 12.5, 3.5 }, state.current_tetrominoes[1], 0, 1.0);
+        draw_tetromino(&(Vector2) { 13, 4 }, state.current_tetrominoes[1], 0, 1.0);
     }
 }
 
